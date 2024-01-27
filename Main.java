@@ -19,53 +19,47 @@ public class Main {
 
         cellGrid = initializeGrid(cellGrid);
         cellGrid = setLiveCells(cellGrid, seedLive);
-        System.out.println(getNumOfLiveCells(getNeighbours(cellGrid, 3, 3)));
-        System.out.println(getNumOfLiveCells(getNeighbours(cellGrid, 2, 3)));
-        System.out.println(getNumOfLiveCells(getNeighbours(cellGrid, 2, 2)));
-        System.out.println(getNumOfLiveCells(getNeighbours(cellGrid, 3, 2)));
+
         displayASCIIGrid(cellGrid);
-        cellGrid = nextGenartion(cellGrid);
-        displayASCIIGrid(cellGrid);
+        displayASCIIGrid(nextGenartion(cellGrid));
     }
 
 
     static Cell[][] nextGenartion (Cell[][] grid){
-        Cell[][] outGrid = grid;
+        Cell[][] outGrid = new Cell[grid.length][grid[0].length];  
+        outGrid = initializeGrid(outGrid);
         for (int i = 0; i < grid.length; i++) {
             for (int j = 0; j < grid[i].length; j++) {
-                outGrid[i][j].setSate(cellLogic(grid,i,j).getState());
+                outGrid[i][j].setSate(cellLogic(grid, i, j));
             }
         }
-        System.out.println(getNumOfLiveCells(getNeighbours(outGrid, 3, 3)));
-        System.out.println(getNumOfLiveCells(getNeighbours(outGrid, 2, 3)));
-        System.out.println(getNumOfLiveCells(getNeighbours(outGrid, 2, 2)));
-        System.out.println(getNumOfLiveCells(getNeighbours(outGrid, 3, 2)));
+
         return outGrid;
     }
 
-    static Cell cellLogic (Cell[][] grid, int x, int y) {
+    static Boolean cellLogic (Cell[][] grid, int x, int y) {
         int numOfLiveNeighbours = getNumOfLiveCells(getNeighbours(grid, x, y));
         Cell outCell = new Cell(Cell.DEAD);
         boolean cellState = grid[x][y].getState();
 
         if (numOfLiveNeighbours < 2 && cellState == Cell.LIVE) { 
             outCell.setSate(Cell.DEAD);
-            return outCell;
+            return outCell.getState();
         } else if (numOfLiveNeighbours > 3 && cellState == Cell.LIVE) {
             outCell.setSate(Cell.DEAD);
-            return outCell;
+            return outCell.getState();
         } else if (numOfLiveNeighbours == 2 && cellState == Cell.LIVE) {
             outCell.setSate(Cell.LIVE);
-            return outCell;
+            return outCell.getState();
         } else if (numOfLiveNeighbours == 3 && cellState == Cell.LIVE) {
             outCell.setSate(Cell.LIVE);
-            return outCell;
+            return outCell.getState();
         } else if (numOfLiveNeighbours == 3 && cellState == Cell.DEAD) {
             outCell.setSate(Cell.LIVE);
-            return outCell;
+            return outCell.getState();
         }
 
-        return outCell;
+        return outCell.getState();
     }   
 
     static int getNumOfLiveCells(Cell[] cells) {
@@ -78,9 +72,11 @@ public class Main {
 
     static Cell[] getNeighbours(Cell[][] grid, int x, int y) {
         Cell[] neighbours = new Cell[8];
+
         for (int i = 0; i < neighbours.length; i++) {
             neighbours[i] = new Cell(Cell.DEAD);
         }  
+
         try {
             neighbours[0].setSate(grid[x-1][y-1].getState()); 
         } catch (Exception e) {
