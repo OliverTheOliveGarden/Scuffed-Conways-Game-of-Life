@@ -1,8 +1,6 @@
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-import javax.print.DocFlavor.INPUT_STREAM;
-
 public class Main {
 
     public static Scanner scan = new Scanner(System.in);
@@ -13,6 +11,7 @@ public class Main {
     public static final String ANSI_BLACK_BACKGROUND = "\u001B[40m";
     public static final String ANSI_WHITE_BACKGROUND = "\u001B[47m";
     public static final String ANSI_BOLD = "\u001b[1m";
+    public static final String ANSI_RED = "\u001b[31m";
 
     public static void main(String[] args) {
         runGame();
@@ -93,9 +92,37 @@ public class Main {
             runInput(grid);
             break;
         }
-        if (shouldStop == false) {
-           runInput(grid); 
+        if (shouldStop == true) {
+           return;
+        } else {
+            runInput(grid);
         }
+    }
+
+    static int getYGridSizeInput () {
+        int x = 10;
+        System.out.print("Y/Virtical: ");
+        try {
+            x = Integer.parseInt(scan.nextLine());
+        } catch (Exception e) {
+            System.out.println(ANSI_BOLD + ANSI_RED + "Invalid Input Try Agian" + ANSI_RESET);
+            x = getYGridSizeInput();
+        }
+        
+        return x;
+    }
+
+    static int getXGridSizeInput () {
+        int x = 10;
+        System.out.print("X/Horizantel: ");
+        try {
+            x = Integer.parseInt(scan.nextLine());
+        } catch (Exception e) {
+            System.out.println(ANSI_BOLD + ANSI_RED + "Invalid Input Try Agian" + ANSI_RESET);
+            x = getXGridSizeInput();
+        }
+        
+        return x;
     }
 
     static void runGame() {
@@ -103,13 +130,11 @@ public class Main {
 
         int[] gridSize = {10, 10};
         System.out.println("Enter GridSize");
-        System.out.print("X/Horizantel: ");
-        gridSize[0] = Integer.parseInt(scan.nextLine());
-        System.out.print("Y/Virtical: ");
-        gridSize[1] = Integer.parseInt(scan.nextLine());
-
+        gridSize[0] = getXGridSizeInput();
+        gridSize[1] = getYGridSizeInput();
         Cell[][] cellGrid = new Cell[gridSize[0]][gridSize[1]];
         cellGrid = initializeGrid(cellGrid);
+        
         runInput(cellGrid);
     }
 
