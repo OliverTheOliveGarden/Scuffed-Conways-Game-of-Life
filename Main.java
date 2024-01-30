@@ -1,6 +1,8 @@
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
+import javax.print.DocFlavor.INPUT_STREAM;
+
 public class Main {
 
     public static Scanner scan = new Scanner(System.in);
@@ -47,9 +49,9 @@ public class Main {
     }
 
     static void runInput(Cell[][] grid) {
-        System.out.print("Enter Command");
+        System.out.print("Enter Command: ");
         String inputString = scan.nextLine();
-        String command = inputString.substring(0, 2);
+        String command = (inputString.length() == 3) ? inputString : inputString.substring(0, 2);
         int intervel = 0;
         boolean shouldStop = false;
 
@@ -84,7 +86,7 @@ public class Main {
                 System.out.println("NXT, // Next - Displays the next genation");
                 System.out.println("ITVX, // Intervel - Sets the intervel for Continue to X");
                 System.out.println("SLC, // Set Live Cells - Must Have Cell Cords be 3 digits & be Formated Like SLC,{001, 011},{002, 012}");
-                System.out.println("HLP, // Help - Displays This List */");
+                System.out.println("HLP, // Help - Displays This List");
                 break;
             default:
             System.err.println("Invaild Comand");
@@ -102,9 +104,9 @@ public class Main {
         int[] gridSize = {10, 10};
         System.out.println("Enter GridSize");
         System.out.print("X/Horizantel: ");
-        gridSize[0] = scan.nextInt();
+        gridSize[0] = Integer.parseInt(scan.nextLine());
         System.out.print("Y/Virtical: ");
-        gridSize[1] = scan.nextInt();
+        gridSize[1] = Integer.parseInt(scan.nextLine());
 
         Cell[][] cellGrid = new Cell[gridSize[0]][gridSize[1]];
         cellGrid = initializeGrid(cellGrid);
