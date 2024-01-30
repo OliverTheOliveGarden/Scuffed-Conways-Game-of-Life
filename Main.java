@@ -1,30 +1,117 @@
+import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
+
 public class Main {
 
-    enum inputs {
-        CON, // Continute
-        STP, // Stop
-        RES, // Reset
-        NXT, // Next
-    }
+    public static Scanner scan = new Scanner(System.in);
 
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
     public static final String ANSI_WHITE = "\u001B[37m";
     public static final String ANSI_BLACK_BACKGROUND = "\u001B[40m";
     public static final String ANSI_WHITE_BACKGROUND = "\u001B[47m";
+    public static final String ANSI_BOLD = "\u001b[1m";
 
     public static void main(String[] args) {
-        Cell[][] cellGrid = new Cell[7][7];
-        int[][] seedLive = {{2, 3},{2, 2},{3, 3},{2,4}};
-
-        cellGrid = initializeGrid(cellGrid);
-        cellGrid = setLiveCells(cellGrid, seedLive);
-
-        displayASCIIGrid(cellGrid);
-        displayASCIIGrid(nextGenartion(cellGrid));
+        runGame();
     }
 
+    static int[][] SLCInput (String input) {
+        int[][] output = new int[(input.length() - 3)/11][2];
+        input = input.substring(2);
+        String[] splitUpCordsSt = new String[input.length()/11];
 
+        for(int i = 0; i < input.length()/11; i++) {
+            splitUpCordsSt[i] = (i == 0 ) ? input.substring(0,10):input.substring((i * 11) - 1, ((i++) * 11) - 1);
+        }
+        for(int i = 0;i < splitUpCordsSt.length; i++){
+            output[i][0] = Integer.parseInt(splitUpCordsSt[i].substring(2,4));
+            output[i][1] = Integer.parseInt(splitUpCordsSt[i].substring(7,9));
+        }
+        return output;
+    }
+
+    static void CONInput(int x, Cell[][] grid, int secs) {
+        if (x > 0) {
+            displayASCIIGrid(grid);
+            try {
+                TimeUnit.SECONDS.sleep(secs);
+            } catch (InterruptedException e) {
+                System.out.println(":(");
+                return;
+            }
+            CONInput(x--, grid, secs);
+        } else {
+            runInput(grid);
+        }
+    }
+
+    static void runInput(Cell[][] grid) {
+        System.out.print("Enter Command");
+        String inputString = scan.nextLine();
+        String command = inputString.substring(0, 2);
+        int intervel = 0;
+        boolean shouldStop = false;
+
+        switch (command) {
+            case "CON":
+                String x = inputString.substring(3);
+                CONInput(Integer.parseInt(x), grid, intervel);
+                shouldStop = true;
+                break;
+            case "STP":
+                shouldStop = true;
+                break;
+            case "RES":
+                runGame();
+                break;
+            case "NXT":
+                grid = nextGenartion(grid);
+                displayASCIIGrid(grid);
+                break;
+            case "ITV":
+                String y = inputString.substring(3);
+                intervel = Integer.parseInt(y);
+                break;
+            case "SCL":
+                int[][] liveCellCords = SLCInput(inputString);
+                setLiveCells(grid, liveCellCords);
+                break;
+            case "HLP":
+                System.out.println("CONX, // Continute - Displays the next X intervals at a constant Speed");
+                System.out.println("STP, // Stop - Stops the game");
+                System.out.println("RES, // Resart - Restart the game");
+                System.out.println("NXT, // Next - Displays the next genation");
+                System.out.println("ITVX, // Intervel - Sets the intervel for Continue to X");
+                System.out.println("SLC, // Set Live Cells - Must Have Cell Cords be 3 digits & be Formated Like SLC,{001, 011},{002, 012}");
+                System.out.println("HLP, // Help - Displays This List */");
+                break;
+            default:
+            System.err.println("Invaild Comand");
+            runInput(grid);
+            break;
+        }
+        if (shouldStop == false) {
+           runInput(grid); 
+        }
+    }
+
+    static void runGame() {
+        System.out.println(ANSI_BOLD + "Type HLP for Help" + ANSI_RESET);
+
+        int[] gridSize = {10, 10};
+        System.out.println("Enter GridSize");
+        System.out.print("X/Horizantel: ");
+        gridSize[0] = scan.nextInt();
+        System.out.print("Y/Virtical: ");
+        gridSize[1] = scan.nextInt();
+
+        Cell[][] cellGrid = new Cell[gridSize[0]][gridSize[1]];
+        cellGrid = initializeGrid(cellGrid);
+        runInput(cellGrid);
+    }
+
+    //#region Genartion Functions
     static Cell[][] nextGenartion (Cell[][] grid){
         Cell[][] outGrid = new Cell[grid.length][grid[0].length];  
         outGrid = initializeGrid(outGrid);
@@ -36,31 +123,6 @@ public class Main {
 
         return outGrid;
     }
-
-    static Boolean cellLogic (Cell[][] grid, int x, int y) {
-        int numOfLiveNeighbours = getNumOfLiveCells(getNeighbours(grid, x, y));
-        Cell outCell = new Cell(Cell.DEAD);
-        boolean cellState = grid[x][y].getState();
-
-        if (numOfLiveNeighbours < 2 && cellState == Cell.LIVE) { 
-            outCell.setSate(Cell.DEAD);
-            return outCell.getState();
-        } else if (numOfLiveNeighbours > 3 && cellState == Cell.LIVE) {
-            outCell.setSate(Cell.DEAD);
-            return outCell.getState();
-        } else if (numOfLiveNeighbours == 2 && cellState == Cell.LIVE) {
-            outCell.setSate(Cell.LIVE);
-            return outCell.getState();
-        } else if (numOfLiveNeighbours == 3 && cellState == Cell.LIVE) {
-            outCell.setSate(Cell.LIVE);
-            return outCell.getState();
-        } else if (numOfLiveNeighbours == 3 && cellState == Cell.DEAD) {
-            outCell.setSate(Cell.LIVE);
-            return outCell.getState();
-        }
-
-        return outCell.getState();
-    }   
 
     static int getNumOfLiveCells(Cell[] cells) {
         int x = 0; 
@@ -127,14 +189,15 @@ public class Main {
 
         return neighbours;
     }
-
+    //#endregion
+    //#region Cell Minuplation Functions
     static Cell[][] setLiveCells (Cell[][] grid, int[][] coordinates) {
         for (int i = 0; i < coordinates.length; i++) {
             grid[coordinates[i][0]][coordinates[i][1]].setSate(true);
         }
         return grid;
     }
-
+    
     static Cell[][] initializeGrid(Cell[][] grid){
         for (int i = 0; i < grid.length; i++) {
             for (int j = 0; j < grid[i].length; j++) {
@@ -144,6 +207,32 @@ public class Main {
 
         return grid;
     }
+    
+    static Boolean cellLogic (Cell[][] grid, int x, int y) {
+        int numOfLiveNeighbours = getNumOfLiveCells(getNeighbours(grid, x, y));
+        Cell outCell = new Cell(Cell.DEAD);
+        boolean cellState = grid[x][y].getState();
+
+        if (numOfLiveNeighbours < 2 && cellState == Cell.LIVE) { 
+            outCell.setSate(Cell.DEAD);
+            return outCell.getState();
+        } else if (numOfLiveNeighbours > 3 && cellState == Cell.LIVE) {
+            outCell.setSate(Cell.DEAD);
+            return outCell.getState();
+        } else if (numOfLiveNeighbours == 2 && cellState == Cell.LIVE) {
+            outCell.setSate(Cell.LIVE);
+            return outCell.getState();
+        } else if (numOfLiveNeighbours == 3 && cellState == Cell.LIVE) {
+            outCell.setSate(Cell.LIVE);
+            return outCell.getState();
+        } else if (numOfLiveNeighbours == 3 && cellState == Cell.DEAD) {
+            outCell.setSate(Cell.LIVE);
+            return outCell.getState();
+        }
+
+        return outCell.getState();
+    }   
+    //#endregion
 
     static void displayASCIIGrid (Cell[][] grid) {
         String[][] outGrid = new String[grid.length][grid[0].length];
