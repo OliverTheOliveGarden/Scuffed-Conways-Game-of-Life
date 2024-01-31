@@ -12,6 +12,7 @@ public class Main {
     public static final String ANSI_WHITE_BACKGROUND = "\u001B[47m";
     public static final String ANSI_BOLD = "\u001b[1m";
     public static final String ANSI_RED = "\u001b[31m";
+    public static int currentGenartion = 0;
 
     public static void main(String[] args) {
         runGame();
@@ -22,8 +23,9 @@ public class Main {
         input = input.substring(2);
         String[] splitUpCordsSt = new String[input.length()/11];
 
+        //(i == 0 ) ? input.substring(0,10):
         for(int i = 0; i < input.length()/11; i++) {
-            splitUpCordsSt[i] = (i == 0 ) ? input.substring(0,10):input.substring((i * 11) - 1, ((i++) * 11) - 1);
+            splitUpCordsSt[i] = input.substring((i * 11), ((i++) * 11));
         }
         for(int i = 0;i < splitUpCordsSt.length; i++){
             output[i][0] = Integer.parseInt(splitUpCordsSt[i].substring(2,4));
@@ -33,28 +35,29 @@ public class Main {
     }
 
     static void CONInput(int x, Cell[][] grid, int secs) {
+
         if (x > 0) {
-            displayASCIIGrid(grid);
+            displayASCIIGrid(grid, "Genartion: " + currentGenartion);
             try {
-                TimeUnit.SECONDS.sleep(secs);
+                TimeUnit.MILLISECONDS.sleep(secs);
             } catch (InterruptedException e) {
                 System.out.println(":(");
                 return;
             }
-            CONInput(x--, grid, secs);
+            CONInput(x - 1, grid, secs);
         } else {
-            runInput(grid);
+            runInput(grid, secs);
         }
     }
 
-    static void runInput(Cell[][] grid) {
+    static void runInput(Cell[][] grid, int defaultItv) {
         System.out.print("Enter Command: ");
         String inputString = scan.nextLine();
-        String command = (inputString.length() == 3) ? inputString : inputString.substring(0, 2);
-        int intervel = 0;
+        String command = (inputString.length() == 3) ? inputString : inputString.substring(0, 3);
+        int intervel = defaultItv;
         boolean shouldStop = false;
 
-        switch (command) {
+         switch (command) {
             case "CON":
                 String x = inputString.substring(3);
                 CONInput(Integer.parseInt(x), grid, intervel);
@@ -78,24 +81,28 @@ public class Main {
                 int[][] liveCellCords = SLCInput(inputString);
                 setLiveCells(grid, liveCellCords);
                 break;
+            case "STS":
+                System.out.println("Current Gen: " + currentGenartion + " Current Interval: " + intervel);
+                break;
             case "HLP":
-                System.out.println("CONX, // Continute - Displays the next X intervals at a constant Speed");
-                System.out.println("STP, // Stop - Stops the game");
-                System.out.println("RES, // Resart - Restart the game");
-                System.out.println("NXT, // Next - Displays the next genation");
-                System.out.println("ITVX, // Intervel - Sets the intervel for Continue to X");
+                System.out.println("CONx // Continute - Displays the next X intervals at a constant Speed");
+                System.out.println("STP // Stop - Stops the game");
+                System.out.println("RES // Resart - Restart the game");
+                System.out.println("NXT // Next - Displays the next genation");
+                System.out.println("ITVx // Intervel - Sets the intervel for Continue to X in millseconds");
                 System.out.println("SLC, // Set Live Cells - Must Have Cell Cords be 3 digits & be Formated Like SLC,{001, 011},{002, 012}");
-                System.out.println("HLP, // Help - Displays This List");
+                System.out.println("STS // Stats - Displays curenten Gen and Interval");
+                System.out.println("HLP // Help - Displays This List");
                 break;
             default:
-            System.err.println("Invaild Comand");
-            runInput(grid);
+                System.out.println(ANSI_RED + "Invaild Comand" + ANSI_RESET);
+                runInput(grid, intervel);
             break;
         }
         if (shouldStop == true) {
            return;
         } else {
-            runInput(grid);
+            runInput(grid, intervel);
         }
     }
 
@@ -135,7 +142,9 @@ public class Main {
         Cell[][] cellGrid = new Cell[gridSize[0]][gridSize[1]];
         cellGrid = initializeGrid(cellGrid);
         
-        runInput(cellGrid);
+        currentGenartion = 0;
+
+        runInput(cellGrid, 1000);
     }
 
     //#region Genartion Functions
@@ -148,6 +157,7 @@ public class Main {
             }
         }
 
+        currentGenartion++;
         return outGrid;
     }
 
@@ -275,7 +285,24 @@ public class Main {
             }
             System.out.print("\n");
         }
-        System.out.print("\n");
+        System.out.println("\n");
+    }
+
+    static void displayASCIIGrid (Cell[][] grid, String extra) {
+        String[][] outGrid = new String[grid.length][grid[0].length];
+        for (int i = 0; i < grid.length; i++) {
+            for (int j = 0; j < grid[i].length; j++) {
+                outGrid[i][j] = (grid[i][j].getState() == Cell.LIVE) ? ANSI_WHITE_BACKGROUND + ANSI_WHITE + "+" + ANSI_RESET: ANSI_BLACK_BACKGROUND + ANSI_BLACK + "-" + ANSI_RESET;
+            }
+        }
+
+        for (int i = 0; i < outGrid.length; i++) {
+            for (int j = 0; j < outGrid[i].length; j++) {
+                System.err.print(outGrid[i][j]);
+            }
+            System.out.print("\n");
+        }
+        System.out.println(extra + "\n");
     }
 
 }
